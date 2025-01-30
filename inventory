@@ -1,10 +1,10 @@
-[linux-web]
+[linux_web]
 192.168.145.164
 
-[windows-web]
+[windows_web]
 192.168.145.165
 
-[windows-web:vars]
+[windows_web:vars]
 ansible_user=ansible
 ansible_password=Aa123456@@
 ansible_connection=winrm
@@ -13,5 +13,5 @@ ansible_port=5986
 ansible_winrm_server_cert_validation=ignore
 ansible_python_interpreter=C:/Users/Administrator/AppData/Local/Programs/Python/Python312/python.exe
 
-[linux-web:vars]
+[linux_web:vars]
 ansible_become_pass=123

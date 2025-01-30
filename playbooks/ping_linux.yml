@@ -1,7 +1,6 @@
 ---
 - name: Ping all Linux hosts
-  hosts: linux
-  become: false
-  gather_facts: no
+  hosts: linux_web
   roles:
-    - { role: linux, tasks_from: ping.yml }
+    # - { role: linux, tasks_from: ping.yml }
+    - role: /home/admin1/Desktop/ansible-role/roles/linux/tasks/ping.yml
