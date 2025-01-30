@@ -1,0 +1,6 @@
+---
+- name: Manage Linux hosts
+  hosts: linux
+  become: yes
+  roles:
+    - linux

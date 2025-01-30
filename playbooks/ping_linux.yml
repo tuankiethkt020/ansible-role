@@ -1,0 +1,7 @@
+---
+- name: Ping all Linux hosts
+  hosts: linux
+  become: false
+  gather_facts: no
+  roles:
+    - { role: linux, tasks_from: ping.yml }

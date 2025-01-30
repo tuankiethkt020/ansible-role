@@ -1,0 +1,5 @@
+---
+- import_tasks: tasks/ping.yml
+- import_tasks: tasks/user.yml
+- import_tasks: tasks/clone_code.yml
+- import_tasks: tasks/install_nginx.yml

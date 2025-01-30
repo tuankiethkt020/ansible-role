@@ -1,0 +1,13 @@
+- name: Ensure Git is installed
+  apt:
+    name: git
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Clone the ansible-web repository
+  git:
+    repo: 'https://github.com/tuankiethkt020/ansible-web.git'
+    # dest: '/home/{{ created_username }}/Desktop/ansible-web'
+    dest: '/home/admin1/Desktop/ansible-web'
+    version: main

@@ -1,0 +1,7 @@
+---
+- name: Manage Windows hosts
+  hosts: windows
+  become: false
+  gather_facts: false
+  roles:
+    - windows

@@ -1,0 +1,25 @@
+- name: Check if the user exists
+  shell: "id -u {{ created_username }}"
+  register: user_check
+  ignore_errors: true
+
+- name: Debug user_check result
+  debug:
+    var: user_check
+
+- name: Create a new regular user if it does not exist
+  user:
+    name: "{{ created_username }}"
+    state: present
+    groups: sudo
+    append: true
+    create_home: true
+  when: user_check.failed
+
+- name: Setup passwordless sudo for the sudo group
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
