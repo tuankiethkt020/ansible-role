@@ -1,0 +1,12 @@
+---
+- name: Cài đặt Git
+  apt:
+    name: git
+    state: present
+
+- name: Clone source code từ GitHub
+  git:
+    repo: "https://github.com/tuankiethkt020/ansible-web.git"
+    dest: "{{ nginx_root }}"
+    version: main
+    force: yes  # Bắt buộc ghi đè nội dung nếu thư mục không rỗng

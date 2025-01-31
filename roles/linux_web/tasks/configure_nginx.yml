@@ -1,0 +1,13 @@
+---
+- name: Sao chép file cấu hình Nginx
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_conf_dest }}"
+  notify: Restart Nginx
+
+- name: Bật site cấu hình mới
+  file:
+    src: "{{ nginx_conf_dest }}"
+    dest: "{{ nginx_conf_enabled }}"
+    state: link
+  notify: Restart Nginx

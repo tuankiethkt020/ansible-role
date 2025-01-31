@@ -1,0 +1,16 @@
+---
+- name: Cập nhật danh sách package
+  apt:
+    update_cache: yes
+
+- name: Cài đặt Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Đảm bảo Nginx đang chạy
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+

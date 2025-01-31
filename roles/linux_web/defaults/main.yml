@@ -1,0 +1,11 @@
+---
+# defaults file for linux_web
+# Định nghĩa các biến mặc định cho role
+nginx_listen_port: 80
+nginx_server_name: "{{ ansible_default_ipv4.address }}"
+nginx_root: /var/www/ansible-web
+nginx_index_files: "index.html index.htm"
+nginx_error_log: /var/log/nginx/error.log
+nginx_access_log: /var/log/nginx/access.log
+nginx_conf_dest: /etc/nginx/sites-available/default
+nginx_conf_enabled: /etc/nginx/sites-enabled/default
