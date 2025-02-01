@@ -1,0 +1,4 @@
+---
+- name: In thông điệp debug
+  debug:
+    msg: "{{ debug_message }}"

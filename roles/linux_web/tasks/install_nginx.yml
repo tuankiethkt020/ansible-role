@@ -3,10 +3,26 @@
   apt:
     update_cache: yes
 
-- name: Cài đặt Nginx
+- name: Cài đặt Nginx, PHP-FPM, PHP-MySQL và MySQL Server
   apt:
-    name: nginx
+    name:
+      - nginx
+      - php-fpm
+      - php-mysql
+      - mysql-server  # Cài đặt MySQL Server
     state: present
+
+- name: Cài đặt pip3
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Cài đặt PyMySQL (cho Python 3)
+  pip:
+    name: PyMySQL
+    state: present
+
+- import_tasks: detect_php.yml
 
 - name: Đảm bảo Nginx đang chạy
   service:
@@ -14,3 +30,37 @@
     state: started
     enabled: yes
 
+- name: Đảm bảo PHP-FPM đang chạy
+  service:
+    name: "{{ php_fpm_service }}"
+    state: started
+    enabled: yes
+
+- name: Đảm bảo dịch vụ MySQL đang chạy
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Thiết lập root password cho MySQL
+  command: >
+    mysql -u root -p'password' -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
+
+- name: Tạo database test_db
+  command: >
+    mysql -u root -p'password' -e "CREATE DATABASE IF NOT EXISTS test_db;"
+
+- name: Tạo bảng users trong test_db
+  command: >
+    mysql -u root -p'password' -e "CREATE TABLE IF NOT EXISTS test_db.users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50), password VARCHAR(255));"
+
+- name: Kiểm tra user đã tồn tại trong bảng users
+  command: >
+    mysql -u root -p'password' -e "SELECT * FROM test_db.users WHERE username = 'admin';"
+  register: user_check
+  changed_when: false
+
+- name: Thêm user admin vào bảng users nếu chưa tồn tại
+  command: >
+    mysql -u root -p'password' -e "INSERT INTO test_db.users (username, password) VALUES ('admin', '123');"
+  when: user_check.stdout == ""

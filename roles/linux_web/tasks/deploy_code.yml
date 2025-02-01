@@ -3,10 +3,20 @@
   apt:
     name: git
     state: present
+  register: git_install
+
+- include_tasks: debug.yml
+  vars:
+    debug_message: "Kết quả cài đặt Git: {{ git_install }}"
 
 - name: Clone source code từ GitHub
   git:
     repo: "https://github.com/tuankiethkt020/ansible-web.git"
     dest: "{{ nginx_root }}"
     version: main
-    force: yes  # Bắt buộc ghi đè nội dung nếu thư mục không rỗng
+    force: yes  # Bắt buộc ghi đè nếu thư mục không rỗng
+  register: git_clone
+
+- include_tasks: debug.yml
+  vars:
+    debug_message: "Kết quả clone source code: {{ git_clone }}"

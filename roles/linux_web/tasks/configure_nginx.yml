@@ -1,13 +1,23 @@
 ---
-- name: Sao chép file cấu hình Nginx
+- name: Sao chép file cấu hình Nginx từ template
   template:
     src: nginx.conf.j2
     dest: "{{ nginx_conf_dest }}"
+  register: nginx_template
   notify: Restart Nginx
 
-- name: Bật site cấu hình mới
+- include_tasks: debug.yml
+  vars:
+    debug_message: "Kết quả sao chép file cấu hình Nginx: {{ nginx_template }}"
+
+- name: Bật site cấu hình mới (tạo symlink)
   file:
     src: "{{ nginx_conf_dest }}"
     dest: "{{ nginx_conf_enabled }}"
     state: link
+  register: nginx_link
   notify: Restart Nginx
+
+- include_tasks: debug.yml
+  vars:
+    debug_message: "Kết quả tạo symlink kích hoạt site: {{ nginx_link }}"
