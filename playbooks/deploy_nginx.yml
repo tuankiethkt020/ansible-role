@@ -2,7 +2,7 @@
 - name: Deploy Nginx Server
   hosts: linux_web
   become: yes
-  vars_files:
-    - group_vars/linux-web-vault.yml
+  # vars_files:
+  #   - group_vars/linux-web-vault.yml
   roles:
     - linux_web
