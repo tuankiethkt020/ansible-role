@@ -1,2 +1,0 @@
-- name: Test connection to Windows
-  ansible.windows.win_ping:

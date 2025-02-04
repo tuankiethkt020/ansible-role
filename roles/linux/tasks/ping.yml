@@ -1,6 +1,0 @@
-- name: Test connection to Linux
-  ansible.builtin.ping:
-
-- name: Show ping result message
-  debug:
-    msg: "Ping pong successful"
