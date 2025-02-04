@@ -1,6 +1,6 @@
 ---
 # tasks file for linux_web
-- import_tasks: install_nginx.yml
 - import_tasks: deploy_code.yml
+- import_tasks: install_nginx.yml
 - import_tasks: start_nginx.yml
 - import_tasks: configure_nginx.yml

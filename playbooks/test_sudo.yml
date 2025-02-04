@@ -1,0 +1,9 @@
+- name: Test Sudo Password
+  hosts: linux_web
+  become: yes
+  # become_user: root
+  # vars_files:
+  #   - group_vars/linux-web-vault.yml
+  tasks:
+    - name: Run a command with sudo
+      command: whoami

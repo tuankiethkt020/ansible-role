@@ -1,4 +1,8 @@
----
+- name: Kiểm tra và xóa thư mục nginx_root nếu tồn tại
+  file:
+    path: "{{ nginx_root }}"
+    state: absent
+
 - name: Cài đặt Git
   apt:
     name: git
@@ -20,3 +24,29 @@
 - include_tasks: debug.yml
   vars:
     debug_message: "Kết quả clone source code: {{ git_clone }}"
+
+- name: Thêm quyền ghi cho thư mục uploads
+  ansible.builtin.file:
+    path: "{{ nginx_root }}/uploads"
+    mode: 'u+rwx,g+rw,o+rw'  # Cung cấp quyền đọc và ghi cho người dùng, nhóm và người khác
+    state: directory
+
+# Đảm bảo clone xong thì mới thực hiện sao chép file vào MySQL
+- name: Xóa database test_db trong MySQL (nếu tồn tại)
+  command: >
+    mysql -u root -p'password' -e "DROP DATABASE IF EXISTS test_db;"
+
+- name: Copy file test_db.sql vào MySQL
+  copy:
+    src: "{{ nginx_root }}/test_db.sql"
+    dest: /tmp/test_db.sql
+    remote_src: yes
+
+
+- name: Import file SQL vào MySQL
+  shell: mysql -u root -ppassword < /tmp/test_db.sql
+
+- name: Xóa file SQL sau khi import
+  file:
+    path: /tmp/test_db.sql
+    state: absent
