@@ -5,8 +5,8 @@
 192.168.145.165
 
 [windows_web:vars]
-ansible_user=ansible
-ansible_password=Aa123456@@
+ansible_user=Administrator
+ansible_password="{{ my_cluster_win_pass }}"
 ansible_connection=winrm
 ansible_winrm_transport=basic
 ansible_port=5986

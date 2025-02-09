@@ -1,7 +1,22 @@
 ---
 - name: Manage Windows hosts
-  hosts: windows
+  hosts: windows_web
   become: false
   gather_facts: false
   roles:
     - windows
+
+
+
+
+# admin1@ansible:~/Desktop/ansible-role$ ansible-playbook -i inventory --ask-vault-pass --extra-vars '@group_vars/windows_web_vault.yml' playbooks/ping_window.yml 
+# Vault password: 
+
+# PLAY [Ping Windows Server] *******************************************************************************************
+
+# TASK [Test connection to Windows] ************************************************************************************
+# ok: [192.168.145.165]
+
+# PLAY RECAP ***********************************************************************************************************
+# 192.168.145.165            : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
