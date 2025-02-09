@@ -1,0 +1,5 @@
+---
+- name: Triển khai IIS web với cleanup
+  hosts: windows_web
+  roles:
+    - window_web

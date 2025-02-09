@@ -1,0 +1,18 @@
+---
+- name: Cài đặt .NET Framework 4.8 trên Windows Server
+  hosts: windows_web
+  tasks:
+    - name: Tải .NET Framework 4.8 từ Microsoft
+      win_get_url:
+        url: "https://go.microsoft.com/fwlink/?linkid=2088631"
+        dest: "C:\\Windows\\Temp\\ndp48-x86-x64-allos-enu.exe"
+        force: yes
+
+    - name: Cài đặt .NET Framework 4.8
+      win_command: "C:\\Windows\\Temp\\ndp48-x86-x64-allos-enu.exe /quiet /norestart"
+      args:
+        creates: "C:\\Windows\\Microsoft.NET\\Framework64\\v4.8"
+
+    - name: Yêu cầu reboot nếu cài đặt thành công
+      win_reboot:
+      when: ansible_facts['os_family'] == "Windows"

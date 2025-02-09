@@ -1,0 +1,16 @@
+---
+- name: Tạo thư mục webroot
+  win_file:
+    path: "{{ web_root }}"
+    state: directory
+
+- name: Tải source code từ GitHub
+  win_get_url:
+    url: "{{ repo_url }}"
+    dest: "{{ zip_dest }}"
+
+- name: Giải nén source code
+  win_unzip:
+    src: "{{ zip_dest }}"
+    dest: "{{ web_root }}"
+    remote_src: yes

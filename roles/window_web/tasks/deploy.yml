@@ -1,0 +1,17 @@
+---
+- name: Cấu hình quyền truy cập cho IIS_IUSRS
+  win_acl:
+    path: "{{ web_root }}"
+    user: "{{ iis_user }}"
+    rights: FullControl
+    type: allow
+    state: present
+
+- name: Cấu hình website trong IIS với thư mục chính xác
+  win_iis_website:
+    name: "{{ iis_site_name }}"
+    state: started
+    physical_path: "{{ web_root }}\\ansible-web-main"  # Trỏ đúng vào thư mục chứa mã nguồn
+    port: "{{ iis_port }}"
+    hostname: "{{ iis_hostname }}"
+    ip: "{{ iis_ip }}"

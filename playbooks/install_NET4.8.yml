@@ -1,0 +1,41 @@
+---
+- name: Cài đặt .NET Framework 4.8 trên Windows Server
+  hosts: windows_web
+  tasks:
+    - name: Kiểm tra .NET Framework 4.8 đã được cài đặt chưa
+      win_shell: |
+        Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' | 
+        Get-ItemPropertyValue -Name Release
+      register: net_version
+      ignore_errors: yes
+
+    - name: Hiển thị phiên bản .NET Framework hiện tại
+      debug:
+        msg: "Phiên bản .NET Framework hiện tại: {{ net_version.stdout }}"
+      when: net_version.stdout is defined
+
+    - name: Dừng playbook nếu đã có .NET Framework 4.8
+      meta: end_play
+      when: net_version.stdout is defined and net_version.stdout | int >= 528040  # .NET 4.8 có Release Key >= 528040
+
+    - name: Tải .NET Framework 4.8 từ Microsoft
+      win_get_url:
+        url: "https://go.microsoft.com/fwlink/?linkid=2088631"
+        dest: "C:\\Windows\\Temp\\ndp48-x86-x64-allos-enu.exe"
+        force: yes
+
+    - name: Cài đặt .NET Framework 4.8
+      win_command: "C:\\Windows\\Temp\\ndp48-x86-x64-allos-enu.exe /quiet /norestart"
+      args:
+        creates: "C:\\Windows\\Microsoft.NET\\Framework64\\v4.8"
+      register: dotnet_install
+      ignore_errors: yes  # Không dừng playbook nếu lỗi 3010 xảy ra
+
+    - name: Kiểm tra nếu cần reboot
+      debug:
+        msg: "Cần reboot để hoàn tất cài đặt .NET Framework 4.8"
+      when: dotnet_install.rc == 3010
+
+    - name: Reboot nếu cần thiết
+      win_reboot:
+      when: dotnet_install.rc == 3010

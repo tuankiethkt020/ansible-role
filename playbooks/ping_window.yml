@@ -5,3 +5,6 @@
   tasks:
     - name: Test connection to Windows
       win_ping:
+
+
+# admin1@ansible:~/Desktop/ansible-role$ ansible-playbook -i inventory --ask-vault-pass --extra-vars '@group_vars/windows_web_vault.yml' playbooks/ping_window.yml 

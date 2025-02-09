@@ -1,0 +1,53 @@
+---
+- name: Cài đặt IIS và các tính năng cần thiết bằng DISM
+  win_shell: |
+    Dism /online /Enable-Feature /FeatureName:IIS-WebServerRole /All
+    Dism /online /Enable-Feature /FeatureName:IIS-WebServer /All
+    Dism /online /Enable-Feature /FeatureName:IIS-ApplicationDevelopment /All
+    Dism /online /Enable-Feature /FeatureName:IIS-CGI /All
+    Dism /online /Enable-Feature /FeatureName:IIS-ISAPIExtensions /All
+    Dism /online /Enable-Feature /FeatureName:IIS-ISAPIFilter /All
+    Dism /online /Enable-Feature /FeatureName:IIS-CommonHttpFeatures /All
+    Dism /online /Enable-Feature /FeatureName:IIS-Security /All
+    Dism /online /Enable-Feature /FeatureName:IIS-RequestFiltering /All
+  register: iis_install
+  changed_when: "'Enable' in iis_install.stdout"
+
+- name: Kiểm tra kết quả cài đặt IIS
+  debug:
+    var: iis_install.stdout_lines
+
+
+
+- name: Kiểm tra thư mục web_root có tồn tại không
+  win_stat:
+    path: "{{ web_root }}"
+  register: web_root_status
+
+- name: Dừng IIS trước khi xóa thư mục web_root
+  win_service:
+    name: W3SVC
+    state: stopped
+
+- name: Xóa thư mục web_root nếu tồn tại
+  win_file:
+    path: "{{ web_root }}"
+    state: absent
+
+- name: Khởi động lại IIS sau khi xóa thư mục
+  win_service:
+    name: W3SVC
+    state: started
+
+- name: Kiểm tra website có tồn tại trong IIS không
+  win_iis_website:
+    name: "{{ iis_site_name }}"
+    state: absent
+  register: iis_site_status
+  ignore_errors: true
+
+- name: Xóa website trong IIS nếu tồn tại
+  win_iis_website:
+    name: "{{ iis_site_name }}"
+    state: absent
+  when: iis_site_status is not failed

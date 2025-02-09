@@ -1,2 +1,10 @@
 ---
 # defaults file for window_web
+web_root: "C:\\inetpub\\wwwroot\\ansible-web"
+iis_site_name: "AnsibleWeb"
+iis_port: 80
+iis_hostname: "localhost"
+iis_ip: "*"
+iis_user: "IIS_IUSRS"
+repo_url: "https://github.com/tuankiethkt020/ansible-web/archive/refs/heads/main.zip"
+zip_dest: "C:\\inetpub\\wwwroot\\ansible-web.zip"
