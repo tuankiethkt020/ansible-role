@@ -1,15 +1,17 @@
 ---
 # tasks file for window_web
-- name: Cleanup trước khi triển khai
-  import_tasks: cleanup_windows.yml
+# - name: Cleanup trước khi triển khai
+#   import_tasks: cleanup_windows.yml
 
-- name: Clone code
-  import_tasks: Clone_code.yml
+# - name: Clone code
+#   import_tasks: Clone_code.yml
 
-- name: Triển khai IIS và ứng dụng web
-  import_tasks: deploy.yml
+# - name: Triển khai IIS và ứng dụng web
+#   import_tasks: deploy.yml
+
+# - name: Triển khai PHP
+#   import_tasks: install_php.yml
+
 
 - name: Triển khai PHP
-  import_tasks: install_php.yml
-
-
+  import_tasks: test.yml

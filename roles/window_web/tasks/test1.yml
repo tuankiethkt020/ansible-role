@@ -1,0 +1,80 @@
+---
+### KIỂM TRA VÀ CÀI ĐẶT CHOCOLATEY ###
+- name: Kiểm tra Chocolatey đã cài đặt chưa
+  win_stat:
+    path: C:\ProgramData\chocolatey\bin\choco.exe
+  register: choco_status
+
+- name: Hiển thị trạng thái Chocolatey
+  debug:
+    msg: "Chocolatey {{ 'đã' if choco_status.stat.exists else 'chưa' }} được cài đặt."
+
+- name: Cài đặt Chocolatey nếu chưa có
+  win_shell: |
+    Set-ExecutionPolicy Bypass -Scope Process -Force; 
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; 
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+  when: not choco_status.stat.exists
+
+### KIỂM TRA MYSQL VÀ PHP ###
+- name: Lấy danh sách phần mềm cài qua Chocolatey
+  win_shell: choco list
+  register: choco_list
+
+- name: Hiển thị danh sách phần mềm Chocolatey
+  debug:
+    var: choco_list.stdout_lines
+
+- name: Kiểm tra MySQL đã có trong Chocolatey chưa
+  set_fact:
+    mysql_installed: "{{ 'mysql' in choco_list.stdout }}"
+
+- name: Kiểm tra PHP đã có trong Chocolatey chưa
+  set_fact:
+    php_installed: "{{ 'php' in choco_list.stdout }}"
+
+### CÀI MYSQL VÀ PHP (NẾU CẦN) ###
+- name: Cài đặt MySQL nếu chưa có
+  win_chocolatey:
+    name: mysql
+    version: "8.4.4"
+    state: present
+  when: not mysql_installed
+
+- name: Cài đặt PHP nếu chưa có
+  win_chocolatey:
+    name: php
+    state: present
+  when: not php_installed
+
+### LẤY ĐƯỜNG DẪN MYSQL & PHP ###
+- name: Kiểm tra đường dẫn MySQL
+  win_shell: Get-Command mysql | Select-Object Source
+  register: mysql_path
+  when: mysql_installed
+
+- name: Hiển thị đường dẫn MySQL
+  debug:
+    msg: "Đường dẫn MySQL: {{ mysql_path.stdout }}"
+  when: mysql_installed
+
+- name: Kiểm tra đường dẫn PHP
+  win_shell: Get-Command php | Select-Object Source
+  register: php_path
+  when: php_installed
+
+- name: Hiển thị đường dẫn PHP
+  debug:
+    msg: "Đường dẫn PHP: {{ php_path.stdout }}"
+  when: php_installed
+
+### ĐẶT BIẾN MYSQL_BIN VÀ PHP_BIN ###
+- name: Kiểm tra biến mysql_bin đã tồn tại chưa
+  set_fact:
+    mysql_bin: "{{ mysql_bin | default(mysql_path.stdout | regex_replace('Source\\s+:\\s+', '')) }}"
+  when: mysql_installed and mysql_bin is not defined
+
+- name: Kiểm tra biến php_bin đã tồn tại chưa
+  set_fact:
+    php_bin: "{{ php_bin | default(php_path.stdout | regex_replace('Source\\s+:\\s+', '')) }}"
+  when: php_installed and php_bin is not defined

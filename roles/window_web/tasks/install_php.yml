@@ -13,20 +13,19 @@
     msg: "PHP Path: {{ php_path_result.stdout }}"
   when: php_path_result.stdout | length > 0
 
-- name: Kiểm tra PHP đã được đăng ký trong FastCGI chưa
+- name: Kiểm tra nếu FastCGI đã có cấu hình PHP
   win_shell: |
     $fcgi = & "$env:windir\system32\inetsrv\appcmd.exe" list config -section:system.webServer/fastCgi
     if ($fcgi -match "C:\\tools\\php84\\php-cgi.exe") { Write-Output "EXISTS" } else { Write-Output "MISSING" }
   register: fastcgi_check
 
-- name: Đăng ký PHP vào FastCGI nếu chưa có
+- name: Đăng ký FastCGI nếu chưa có
   win_shell: |
     & "$env:windir\system32\inetsrv\appcmd.exe" set config -section:system.webServer/fastCgi /+"[fullPath='C:\tools\php84\php-cgi.exe', arguments='', maxInstances='4', idleTimeout='300', activityTimeout='30', requestTimeout='90', instanceMaxRequests='10000', protocol='NamedPipe', queueLength='1000']"
   when: fastcgi_check.stdout.strip() == "MISSING"
 
 
-
-- name: Kiểm tra PHP Handler đã tồn tại chưa
+- name: Kiểm tra nếu PHP Handler đã tồn tại
   win_shell: |
     $handlerExists = Get-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/handlers" -name "." | Where-Object { $_.name -eq "PHP_via_FastCGI" }
     if ($handlerExists) { Write-Output "EXISTS" } else { Write-Output "MISSING" }
@@ -38,22 +37,21 @@
 
 - name: Cập nhật hoặc thêm PHP Handler vào IIS
   win_shell: |
-    $handler = Get-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/handlers" -name "." | Where-Object { $_.name -eq "PHP_via_FastCGI" }
-    if ($handler) {
-        Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/handlers/add[@name='PHP_via_FastCGI']" -name "scriptProcessor" -value "{{ php_path_clean }}"
-        Write-Output "UPDATED"
+    if ("{{ php_handler_check.stdout.strip() }}" -eq "EXISTS") {
+      Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/handlers/add[@name='PHP_via_FastCGI']" -name "scriptProcessor" -value "{{ php_path_clean }}"
+      Write-Output "UPDATED"
     } else {
-        Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/handlers" -name "." -value @{
-            name="PHP_via_FastCGI";
-            path="*.php";
-            verb="*";
-            modules="FastCgiModule";
-            scriptProcessor="{{ php_path_clean }}"
-        }
-        Write-Output "CREATED"
+      Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/handlers" -name "." -value @{
+        name="PHP_via_FastCGI";
+        path="*.php";
+        verb="*";
+        modules="FastCgiModule";
+        scriptProcessor="{{ php_path_clean }}"
+      }
+      Write-Output "CREATED"
     }
   register: php_handler_result
-  changed_when: php_handler_result.stdout.strip() == "CREATED" or php_handler_result.stdout.strip() == "UPDATED"
+  changed_when: "'CREATED' in php_handler_result.stdout or 'UPDATED' in php_handler_result.stdout"
 
 
 - name: Thêm index.php vào default document của IIS
@@ -66,55 +64,5 @@
   register: acl_result
   changed_when: "'successfully processed' in acl_result.stdout"
 
-
-- name: Tạo file kiểm tra PHP trong ansible-web
-  win_shell: Set-Content -Path "C:\inetpub\wwwroot\ansible-web\ansible-web-main\test.php" -Value "<?php phpinfo(); ?>"
-
-- name: Cập nhật thư mục website trong IIS
-  win_shell: |
-    & "$env:windir\system32\inetsrv\appcmd.exe" set site /site.name:"AnsibleWeb" /virtualDirectoryDefaults.physicalPath:"C:\inetpub\wwwroot\ansible-web\ansible-web-main"
-
-- name: Bật Directory Browsing trong IIS
-  win_shell: |
-    Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.webServer/directoryBrowse" -name "enabled" -value "True"
-  args:
-    executable: powershell
-
-- name: Bật FastCGI Module trên IIS bằng DISM
-  win_shell: |
-    Dism /online /Enable-Feature /FeatureName:IIS-CGI /All
-  register: fastcgi_install
-  changed_when: "'Enable' in fastcgi_install.stdout"
-
-- name: Kiểm tra kết quả cài đặt FastCGI
-  debug:
-    var: fastcgi_install.stdout_lines
-
-- name: Cấu hình FastCGI cho PHP
-  win_shell: |
-    Import-Module WebAdministration
-    Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter 'system.webServer/fastCgi' -name '.' -value @{fullPath="C:\tools\php84\php-cgi.exe";instanceMaxRequests=10000}
-    Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter 'system.webServer/handlers' -name '.' -value @{name="PHP_via_FastCGI";path="*.php";verb="*";modules="FastCgiModule";scriptProcessor="C:\tools\php84\php-cgi.exe";resourceType="File"}
-  args:
-    executable: powershell
-  register: fastcgi_result
-
-- name: Kiểm tra cấu hình FastCGI
-  debug:
-    var: fastcgi_result.stdout_lines
-
-- name: Tạo web.config cho ứng dụng PHP
-  win_copy:
-    content: |
-      <configuration>
-        <system.webServer>
-          <handlers>
-            <add name="PHP_via_FastCGI" path="*.php" verb="*" modules="FastCgiModule" scriptProcessor="C:\tools\php84\php-cgi.exe" resourceType="File" />
-          </handlers>
-        </system.webServer>
-      </configuration>
-    dest: C:\inetpub\wwwroot\ansible-web\ansible-web-main\web.config
-
-
-- name: Restart IIS để áp dụng thay đổi
+- name: Khởi động lại IIS để áp dụng thay đổi
   win_shell: iisreset

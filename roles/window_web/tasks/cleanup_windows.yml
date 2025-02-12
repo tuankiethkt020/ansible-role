@@ -1,21 +1,28 @@
 ---
-- name: Cài đặt IIS và các tính năng cần thiết bằng DISM
+- name: Lấy danh sách các tính năng IIS đã cài đặt
+  win_shell: Dism /online /Get-Features | findstr /C:"IIS-"
+  register: iis_features
+
+- name: Danh sách các tính năng IIS đã cài đặt
+  debug:
+    var: iis_features.stdout_lines
+
+- name: Cài đặt IIS và các tính năng cần thiết bằng DISM nếu chưa có
   win_shell: |
-    Dism /online /Enable-Feature /FeatureName:IIS-WebServerRole /All
-    Dism /online /Enable-Feature /FeatureName:IIS-WebServer /All
-    Dism /online /Enable-Feature /FeatureName:IIS-ApplicationDevelopment /All
-    Dism /online /Enable-Feature /FeatureName:IIS-CGI /All
-    Dism /online /Enable-Feature /FeatureName:IIS-ISAPIExtensions /All
-    Dism /online /Enable-Feature /FeatureName:IIS-ISAPIFilter /All
-    Dism /online /Enable-Feature /FeatureName:IIS-CommonHttpFeatures /All
-    Dism /online /Enable-Feature /FeatureName:IIS-Security /All
-    Dism /online /Enable-Feature /FeatureName:IIS-RequestFiltering /All
+    {% for feature in [
+      'IIS-WebServerRole', 'IIS-WebServer', 'IIS-ApplicationDevelopment',
+      'IIS-CGI', 'IIS-ISAPIExtensions', 'IIS-ISAPIFilter',
+      'IIS-CommonHttpFeatures', 'IIS-Security', 'IIS-RequestFiltering'
+    ] if feature not in iis_features.stdout %}
+    Dism /online /Enable-Feature /FeatureName:{{ feature }} /All
+    {% endfor %}
   register: iis_install
   changed_when: "'Enable' in iis_install.stdout"
 
 - name: Kiểm tra kết quả cài đặt IIS
   debug:
     var: iis_install.stdout_lines
+
 
 
 
