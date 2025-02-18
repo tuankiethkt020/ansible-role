@@ -1,0 +1,17 @@
+- name: Thử đăng nhập với mật khẩu đăng nhập
+  win_command: "{{ mysql_bin }} -u root --password='{{ mysql_login_password }}' -e 'ALTER USER \"root\"@\"localhost\" IDENTIFIED BY \"{{ mysql_update_password }}\"; FLUSH PRIVILEGES;'"
+  register: mysql_reset_with_login
+  ignore_errors: true
+
+- name: Kiểm tra nếu đăng nhập với mật khẩu hiện tại thất bại, thử với mật khẩu mặc định
+  ansible.builtin.command: >-
+    cmd.exe /c ""C:\tools\mysql\current\bin\mysql.exe"" -u root --password="{{ mysql_default_password }}" -e
+    "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_update_password }}'; FLUSH PRIVILEGES;"
+  when: mysql_reset_with_login.failed
+  register: mysql_reset_with_default_password
+  ignore_errors: true
+
+- name: Kiểm tra kết quả
+  ansible.builtin.debug:
+    msg: "Mật khẩu đã được đặt lại thành '{{ mysql_update_password }}'"
+  when: mysql_reset_with_login.rc == 0 or mysql_reset_with_default_password.rc == 0

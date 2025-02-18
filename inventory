@@ -2,7 +2,7 @@
 192.168.145.164
 
 [windows_web]
-192.168.145.165
+192.168.145.167
 
 [windows_web:vars]
 ansible_user=Administrator

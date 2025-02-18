@@ -36,3 +36,24 @@ Author Information
 ------------------
 
 An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+& "$env:SystemRoot\System32\inetsrv\appcmd.exe" set config /section:staticContent "/+[fileExtension='.jpeg',mimeType='image/jpeg']"

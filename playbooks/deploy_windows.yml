@@ -1,5 +1,7 @@
 ---
 - name: Triển khai IIS web với cleanup
   hosts: windows_web
+  collections:
+    - community.windows
   roles:
     - window_web

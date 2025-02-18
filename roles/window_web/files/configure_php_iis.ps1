@@ -1,8 +1,3 @@
-# Cài đặt PHP nếu chưa có
-if (-Not (Get-Command php -ErrorAction SilentlyContinue)) {
-    choco install php -y
-}
-
 # Lấy đường dẫn php-cgi.exe
 $phpPath = (Get-Command php-cgi.exe).Source
 Write-Output "PHP Path: $phpPath"
@@ -41,7 +36,7 @@ Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -filter "system.w
 Write-Output "Default document set to index.php."
 
 # Gán quyền cho IIS_IUSRS vào thư mục ansible-web
-$webFolder = "C:\inetpub\wwwroot\ansible-web\ansible-web-main"
+$webFolder = "C:\inetpub\wwwroot\ansible-web\"
 icacls $webFolder /grant "IIS_IUSRS:(OI)(CI)F" /T
 Write-Output "Permissions set for IIS_IUSRS on $webFolder."
 

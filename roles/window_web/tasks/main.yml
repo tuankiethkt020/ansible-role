@@ -14,4 +14,4 @@
 
 
 - name: Triển khai PHP
-  import_tasks: test.yml
+  import_tasks: cleanup_windows.yml
