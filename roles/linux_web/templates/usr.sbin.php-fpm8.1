@@ -1,0 +1,38 @@
+# Last Modified: Tue Feb 25 17:14:02 2025
+abi <abi/3.0>,
+
+include <tunables/global>
+
+/usr/sbin/php-fpm8.1 flags=(complain) {
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
+  include <abstractions/openssl>
+  include <abstractions/php>
+  include <abstractions/postfix-common>
+
+  capability chown,
+  capability dac_override,
+  capability mknod,
+
+  network inet,
+  /var/tmp/** rw,
+  /tmp/** rw,
+  /var/www/ansible-web/uploads/** rw,
+  deny /var/www/ansible-web/uploads/** x,
+  /var/www/ansible-web/** r,
+  /run/mysqld/mysqld.sock rw,
+  /usr/sbin/php-fpm8.1 mr,
+  owner /etc/group r,
+  owner /etc/nsswitch.conf r,
+  owner /etc/passwd r,
+  owner /etc/php/8.1/fpm/php-fpm.conf r,
+  owner /etc/php/8.1/fpm/pool.d/www.conf r,
+  owner /proc/sys/kernel/random/boot_id r,
+  owner /run/php/php8.1-fpm.pid w,
+  owner /run/php/php8.1-fpm.sock rw,
+  owner /run/systemd/notify w,
+  owner /run/systemd/userdb/ r,
+  owner /run/systemd/userdb/io.systemd.DynamicUser rw,
+  owner /var/log/php8.1-fpm.log w,
+
+}
