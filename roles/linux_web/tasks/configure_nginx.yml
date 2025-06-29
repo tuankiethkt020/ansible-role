@@ -1,4 +1,9 @@
 ---
+- name: Restart Nginx
+  service:
+    name: nginx
+    state: restarted
+    
 - name: Sao chép file cấu hình Nginx từ template
   template:
     src: nginx.conf.j2

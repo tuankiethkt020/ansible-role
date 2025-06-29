@@ -1,3 +1,11 @@
+- name: Hiển thị user đang chạy playbook
+  ansible.builtin.command: whoami
+  register: whoami_output
+
+- name: In ra user
+  debug:
+    var: whoami_output.stdout
+
 - name: Kiểm tra và xóa thư mục nginx_root nếu tồn tại
   file:
     path: "{{ nginx_root }}"

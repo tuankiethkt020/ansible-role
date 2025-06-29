@@ -30,11 +30,23 @@
     state: started
     enabled: yes
 
-- name: Đảm bảo PHP-FPM đang chạy
+# - name: Đảm bảo PHP-FPM đang chạy
+#   service:
+#     name: "{{ php_fpm_service }}"
+#     state: started
+#     enabled: yes
+
+- name: Kiểm tra config PHP-FPM
+  command: php-fpm8.1 -t
+  register: php_fpm_check
+  failed_when: "'error' in php_fpm_check.stderr"
+
+- name: Bật dịch vụ PHP-FPM
   service:
-    name: "{{ php_fpm_service }}"
+    name: php8.1-fpm
     state: started
     enabled: yes
+  when: php_fpm_check.rc == 0
 
 - name: Đảm bảo dịch vụ MySQL đang chạy
   systemd:

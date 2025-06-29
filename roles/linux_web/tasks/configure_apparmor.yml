@@ -1,0 +1,33 @@
+---
+- name: Tắt AppArmor
+  ansible.builtin.service:
+    name: apparmor
+    state: stopped
+    enabled: no
+
+- name: Xóa profile /etc/apparmor.d/usr.sbin.php-fpm8.1 nếu tồn tại
+  ansible.builtin.file:
+    path: /etc/apparmor.d/usr.sbin.php-fpm8.1
+    state: absent
+
+- name: Copy profile mới vào /etc/apparmor.d/usr.sbin.php-fpm8.1
+  ansible.builtin.template:
+    src: usr.sbin.php-fpm8.1
+    dest: /etc/apparmor.d/usr.sbin.php-fpm8.1
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Bật lại AppArmor
+  ansible.builtin.service:
+    name: apparmor
+    state: started
+    enabled: yes
+
+- name: Nạp lại profile usr.sbin.php-fpm8.1
+  ansible.builtin.command: apparmor_parser -r /etc/apparmor.d/usr.sbin.php-fpm8.1
+  changed_when: false
+
+- name: Chuyển profile usr.sbin.php-fpm8.1 sang chế độ enforce
+  ansible.builtin.command: aa-enforce /etc/apparmor.d/usr.sbin.php-fpm8.1
+  changed_when: false
