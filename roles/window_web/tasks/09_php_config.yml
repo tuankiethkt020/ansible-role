@@ -1,0 +1,14 @@
+- name: Đảm bảo thư mục PHP tồn tại
+  win_file:
+    path: C:\php
+    state: directory
+
+- name: Copy file php.ini
+  win_copy:
+    src: files/php.ini
+    dest: C:\php\php.ini
+
+- name: Cấu hình biến môi trường PHPRC
+  win_shell: "[System.Environment]::SetEnvironmentVariable('PHPRC', 'C:\\php', 'Machine')"
+  args:
+    executable: powershell

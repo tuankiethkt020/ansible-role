@@ -1,0 +1,84 @@
+- name: Lấy đường dẫn chính xác của MySQL và PHP
+  win_shell: |
+    (Get-Command {{ item }}).Source
+  register: bin_paths
+  loop:
+    - mysql
+    - php
+  when: vars[item + '_installed'] is defined and vars[item + '_installed']
+
+- name: Đặt biến đường dẫn MySQL và PHP
+  set_fact:
+    mysql_bin: "{{ bin_paths.results | selectattr('item', 'equalto', 'mysql') | map(attribute='stdout') | first | default('') | trim }}"
+    php_bin: "{{ bin_paths.results | selectattr('item', 'equalto', 'php') | map(attribute='stdout') | first | default('') | trim }}"
+
+### Kiểm tra và hiển thị kết quả ###
+- name: Hiển thị đường dẫn MySQL và PHP
+  debug:
+    msg:
+      - "Đường dẫn MySQL: {{ mysql_bin | default('Không tìm thấy') }}"
+      - "Đường dẫn PHP: {{ php_bin | default('Không tìm thấy') }}"
+
+- name: Thêm MySQL và PHP vào PATH 
+  win_path:
+    elements:
+      - "{{ mysql_bin }}"
+      - "{{ php_bin }}"
+    state: present
+
+- name: Lấy danh sách các đường dẫn trong PATH
+  win_shell: '[System.Environment]::GetEnvironmentVariable("Path", "Machine") -split ";"'
+  register: current_path
+
+- name: Hiển thị PATH hiện tại
+  debug:
+    msg: "{{ current_path.stdout_lines }}"
+
+### CẤU HÌNH MYSQL ###
+- name: Kiểm tra MySQL đã cài đặt hay chưa
+  win_shell: "{{ mysql_bin }} --version"
+  register: mysql_version
+  ignore_errors: true
+- name: Đặt lại mật khẩu cho root
+  win_command: >
+    cmd.exe /c ""{{ mysql_bin }}" -u root -ppassword -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password'; FLUSH PRIVILEGES;""
+  when: mysql_version.rc == 0
+
+  
+- name: Kiểm tra lại user root
+  win_command: >
+    cmd.exe /c ""{{ mysql_bin }}" -u root -ppassword -e "SELECT user, host, plugin FROM mysql.user WHERE user='root';""
+
+- name: Cấp quyền đầy đủ cho root
+  win_command: >
+    cmd.exe /c ""{{ mysql_bin }}" -u root -ppassword -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;""
+  when: mysql_version.rc == 0
+
+- name: Xóa database test_db nếu tồn tại
+  win_command: >
+    cmd.exe /c ""{{ mysql_bin }}" -u root -ppassword -e "DROP DATABASE IF EXISTS test_db;""  
+  when: mysql_version.rc == 0
+
+- name: Tạo database nếu chưa tồn tại
+  win_command: >
+    cmd.exe /c ""{{ mysql_bin }}" -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS test_db;""
+  when: mysql_version.rc == 0
+
+- name: Import database nếu MySQL hoạt động
+  win_command: >
+    cmd.exe /c ""{{ mysql_bin }}" -u root -ppassword test_db < "{{ web_root }}\\test_db.sql""
+  register: db_import
+  when: mysql_version.rc == 0
+  ignore_errors: true
+
+
+- name: Kiểm tra kết quả import database
+  debug:
+    msg: >
+      {% if db_import is defined and db_import.rc == 0 %}
+        Import database thành công!
+      {% elif db_import is defined %}
+        Lỗi import database: {{ db_import.stderr }}
+      {% else %}
+        Task import database đã bị bỏ qua.
+      {% endif %}

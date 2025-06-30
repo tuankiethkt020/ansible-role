@@ -1,0 +1,19 @@
+- name: Hiển thị danh sách các website trong IIS
+  win_shell: |
+    Import-Module WebAdministration;
+    Get-Website | Select-Object -ExpandProperty Name
+  register: iis_sites_list
+
+- name: Hiển thị danh sách website hiện có
+  debug:
+    msg: "{{ iis_sites_list.stdout_lines }}"
+
+- name: Xóa website trong IIS nếu tồn tại
+  win_iis_website:
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  loop:
+    - "{{ iis_site_name }}"
+    - "Default Web Site"
+  when: item in iis_sites_list.stdout_lines

@@ -1,0 +1,10 @@
+- name: Kiểm tra Chocolatey đã cài đặt chưa
+  win_stat:
+    path: C:\ProgramData\chocolatey\bin\choco.exe
+  register: choco_status
+
+- name: Cài đặt Chocolatey nếu chưa có
+  win_shell: |
+    Set-ExecutionPolicy Bypass -Scope Process -Force; 
+    ...
+  when: not choco_status.stat.exists

@@ -1,0 +1,23 @@
+- name: Khởi động lại WAS (để đảm bảo IIS có thể chạy)
+  ansible.windows.win_service:
+    name: WAS
+    state: restarted
+    force_dependent_services: yes
+  when: was_installed.changed
+
+- name: Dừng IIS trước khi xóa thư mục web_root (nếu W3SVC tồn tại)
+  win_service:
+    name: W3SVC
+    state: stopped
+  when: w3svc_status.exists
+
+- name: Xóa thư mục web_root nếu tồn tại
+  win_file:
+    path: "{{ web_root }}"
+    state: absent
+
+- name: Khởi động lại IIS sau khi xóa thư mục (nếu W3SVC tồn tại)
+  win_service:
+    name: W3SVC
+    state: started
+  when: w3svc_status.exists

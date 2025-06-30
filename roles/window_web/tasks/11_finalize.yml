@@ -1,0 +1,14 @@
+- name: Bật Directory Browsing 
+  win_shell: |
+    Set-WebConfigurationProperty -filter "/system.webServer/directoryBrowse" -name "enabled" -value "True" -PSPath "IIS:\Sites\{{ iis_site_name }}"
+
+- name: Đảm bảo IIS và các dịch vụ liên quan đang chạy
+  ansible.windows.win_service:
+    name: "{{ item }}"
+    state: started
+  loop:
+    - W3SVC
+    - WAS
+
+- name: Restart IIS để áp dụng cấu hình mới
+  ansible.windows.win_shell: iisreset

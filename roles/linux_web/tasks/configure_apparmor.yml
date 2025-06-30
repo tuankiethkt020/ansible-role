@@ -31,3 +31,7 @@
 - name: Chuyển profile usr.sbin.php-fpm8.1 sang chế độ enforce
   ansible.builtin.command: aa-enforce /etc/apparmor.d/usr.sbin.php-fpm8.1
   changed_when: false
+
+# - name: Chuyển profile usr.sbin.php-fpm8.1 sang chế độ complain
+#   ansible.builtin.command: aa-complain /etc/apparmor.d/usr.sbin.php-fpm8.1
+#   changed_when: false

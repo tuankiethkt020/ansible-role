@@ -1,0 +1,39 @@
+- name: Hiển thị kết quả kiểm tra IIS
+  debug:
+    msg: "IIS đang chạy thành công!" 
+  when: iis_response.status_code is defined and iis_response.status_code == 200
+
+- name: Kiểm tra và hiển thị phiên bản .NET Framework
+  win_shell: |
+    # Lấy giá trị của Release key từ registry để xác định phiên bản .NET Framework
+    $release = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full').Release
+    if ($release -ge 528040) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.8"
+    } elseif ($release -ge 461808) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.7.2"
+    } elseif ($release -ge 460798) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.7.1"
+    } elseif ($release -ge 394802) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.7"
+    } elseif ($release -ge 394254) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.6.2"
+    } elseif ($release -ge 393295) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.6.1"
+    } elseif ($release -ge 379893) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.6"
+    } elseif ($release -ge 378675) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.5.2"
+    } elseif ($release -ge 378389) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.5.1"
+    } elseif ($release -ge 378140) {
+      Write-Output "Phiên bản .NET Framework hiện tại: 4.5"
+    } else {
+      Write-Output "Không xác định được phiên bản .NET Framework"
+    }
+  register: net_framework_version
+  ignore_errors: true
+
+- name: Hiển thị phiên bản .NET Framework
+  debug:
+    msg: "{{ net_framework_version.stdout }}"
+  when: net_framework_version.stdout is defined

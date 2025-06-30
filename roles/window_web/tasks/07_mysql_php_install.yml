@@ -1,0 +1,18 @@
+- name: Lấy danh sách phần mềm cài đặt qua Chocolatey
+  win_shell: choco list
+  register: choco_list
+
+- name: Kiểm tra MySQL và PHP đã có trong Chocolatey chưa
+  set_fact:
+    mysql_installed: "{{ 'mysql' in choco_list.stdout }}"
+    php_installed: "{{ 'php' in choco_list.stdout }}"
+
+- name: Cài đặt MySQL và PHP nếu chưa có
+  win_chocolatey:
+    name: "{{ item.name }}"
+    version: "{{ item.version | default(omit) }}"
+    state: present
+  loop:
+    - { name: "mysql", version: "8.4.4" }
+    - { name: "php", version: "8.4.4" }
+  when: "not (item.name + '_installed') | bool"

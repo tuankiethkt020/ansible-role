@@ -1,7 +1,0 @@
----
-- name: Manage Windows hosts
-  hosts: windows_web
-  become: false
-  gather_facts: false
-  roles:
-    - windows

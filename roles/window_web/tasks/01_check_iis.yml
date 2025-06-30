@@ -1,0 +1,45 @@
+- name: Lấy danh sách các tính năng IIS đã cài đặt
+  win_feature:
+    name: Web-Server
+  register: iis_installed
+
+- name: Cài đặt Windows Process Activation Service (WAS) nếu chưa có
+  win_feature:
+    name:
+      - WAS
+      - WAS-Process-Model
+      - WAS-Net-Environment
+      - WAS-Config-APIs
+    state: present
+    include_management_tools: yes
+  register: was_installed
+
+- name: Cài đặt IIS nếu chưa có
+  win_feature:
+    name: 
+      - Web-Server
+      - Web-Common-Http
+      - Web-Static-Content
+      - Web-Default-Doc
+      - Web-Dir-Browsing
+      - Web-Http-Errors
+      - Web-App-Dev
+      - Web-CGI
+      - Web-ISAPI-Ext
+      - Web-ISAPI-Filter
+      - Web-Security
+      - Web-Filtering
+      - Web-Mgmt-Console
+    state: present
+    include_management_tools: yes
+  register: iis_install
+
+- name: Kiểm tra kết quả cài đặt IIS
+  debug:
+    var: iis_install
+
+- name: Kiểm tra xem dịch vụ W3SVC đã tồn tại chưa
+  win_service:
+    name: W3SVC
+  register: w3svc_status
+  ignore_errors: true

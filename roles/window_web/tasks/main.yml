@@ -13,5 +13,19 @@
 #   import_tasks: install_php.yml
 
 
-- name: Triển khai PHP
-  import_tasks: cleanup_windows.yml
+# - name: Triển khai PHP
+#   import_tasks: cleanup_windows.yml
+
+
+
+- import_tasks: 01_check_iis.yml
+- import_tasks: 02_iis_restart_cleanup.yml
+- import_tasks: 03_check_dotnet.yml
+- import_tasks: 04_remove_iis_site.yml
+- import_tasks: 05_download_source.yml
+- import_tasks: 06_choco_install.yml
+- import_tasks: 07_mysql_php_install.yml
+- import_tasks: 08_mysql_config.yml
+- import_tasks: 09_php_config.yml
+- import_tasks: 10_iis_config.yml
+- import_tasks: 11_finalize.yml

@@ -22,7 +22,22 @@
     name: PyMySQL
     state: present
 
-- import_tasks: detect_php.yml
+# - import_tasks: detect_php.yml
+- name: Thu thập thông tin các dịch vụ
+  service_facts:
+
+- name: Phát hiện tên service PHP-FPM tự động
+  set_fact:
+    php_fpm_service: "{{ ansible_facts.services.keys() | select('match', '^php[0-9.]+-fpm$') | list | first }}"
+
+- name: Kiểm tra đã tìm thấy PHP-FPM chưa
+  fail:
+    msg: "Không tìm thấy dịch vụ PHP-FPM trên hệ thống!"
+  when: php_fpm_service is not defined or php_fpm_service == ""
+
+- name: In ra tên service PHP-FPM được phát hiện
+  debug:
+    msg: "Tên service PHP-FPM được phát hiện là: {{ php_fpm_service }}"
 
 - name: Đảm bảo Nginx đang chạy
   service:

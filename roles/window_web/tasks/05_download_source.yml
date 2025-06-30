@@ -1,0 +1,29 @@
+- name: Tạo thư mục webroot
+  win_file:
+    path: "{{ web_root }}"
+    state: directory
+
+- name: Tải source code từ GitHub
+  win_get_url:
+    url: "{{ repo_url }}"
+    dest: "{{ zip_dest }}"
+
+- name: Giải nén source code
+  win_unzip:
+    src: "{{ zip_dest }}"
+    dest: "{{ web_root }}"
+    remote_src: yes
+  register: unzip_result
+
+- name: Di chuyển nội dung từ ansible-web-main vào thư mục webroot
+  win_shell: |
+    Move-Item -Path "{{ web_root }}\ansible-web-main\*" -Destination "{{ web_root }}" -Force
+    Remove-Item -Path "{{ web_root }}\ansible-web-main" -Recurse -Force
+  args:
+    executable: powershell.exe
+  when: ansible_facts['os_family'] == "Windows"
+
+- name: Xóa file source code zip_dest 
+  win_file:
+    path: "{{ zip_dest }}"
+    state: absent
